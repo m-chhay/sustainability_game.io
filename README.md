@@ -1,1 +1,1 @@
-# sustainability_game.io
+# sustainability_game
