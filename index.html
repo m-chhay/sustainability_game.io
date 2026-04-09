@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DC Sustainability Optimizer</title>
+<title>Data Center Sustainability Strategy Optimizer</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -235,11 +235,8 @@ body.dark .assum{background:#2a2400;border-color:#6a5200;color:#d4b050}
 .reset-btn{padding:7px 14px;border:0.5px solid var(--border);border-radius:8px;background:var(--surface);font-family:inherit;font-size:12px;cursor:pointer;color:var(--red);transition:all .15s;font-weight:500}
 .reset-btn:hover{border-color:var(--red);background:var(--red-l)}
 /* sort controls */
-.sort-bar{display:flex;align-items:center;gap:5px;margin-bottom:10px;flex-wrap:wrap}
-.sort-lbl{font-size:10px;color:var(--text3);margin-right:2px}
-.sort-btn{padding:4px 9px;border:0.5px solid var(--border);border-radius:6px;background:var(--surface);font-family:inherit;font-size:10px;cursor:pointer;color:var(--text3);transition:all .12s;white-space:nowrap}
-.sort-btn:hover{border-color:var(--border2);color:var(--text2)}
-.sort-btn.on{background:var(--surface2);border-color:var(--border2);color:var(--text);font-weight:500}
+.sort-bar{display:flex;align-items:center;gap:7px;margin-bottom:10px}
+.sort-select{flex:1;padding:5px 8px;border:0.5px solid var(--border);border-radius:6px;background:var(--surface);font-family:inherit;font-size:11px;color:var(--text2);cursor:pointer;appearance:auto}
 
 /* ── INLINE CONFIRM ── */
 #shrink-confirm{display:none;background:var(--red-l);border:1px solid var(--red);border-radius:var(--radius);padding:9px 13px;margin-top:6px;font-size:11.5px;color:var(--red)}
@@ -255,6 +252,14 @@ body.dark .cM{background:#162038!important;color:#7ab0e8!important}
 body.dark .cH{background:#201838!important;color:#a898e8!important}
 body.dark .s3{background:#201830!important;color:#c0a0e8!important}
 @media(prefers-color-scheme:dark){body:not(.light) .cL{background:#1a3028!important;color:#7ecfa8!important}body:not(.light) .cM{background:#162038!important;color:#7ab0e8!important}body:not(.light) .cH{background:#201838!important;color:#a898e8!important}body:not(.light) .s3{background:#201830!important;color:#c0a0e8!important}}
+
+/* ── QUANTITY SELECTOR ── */
+.qty-ctrl{display:flex;align-items:center;gap:0;margin-top:6px;border:0.5px solid var(--border);border-radius:7px;overflow:hidden;background:var(--surface2);width:fit-content}
+.qty-btn{width:26px;height:24px;border:none;background:transparent;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;transition:background .12s;flex-shrink:0}
+.qty-btn:hover{background:var(--border)}
+.qty-btn:disabled{color:var(--border2);cursor:default}
+.qty-num{min-width:28px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--text);border-left:0.5px solid var(--border);border-right:0.5px solid var(--border);height:24px;line-height:24px}
+.qty-label{font-size:9px;color:var(--text3);margin-left:6px;align-self:center}
 </style>
 </head>
 <body>
@@ -311,7 +316,7 @@ body.dark .s3{background:#201830!important;color:#c0a0e8!important}
 <div class="hdr">
   <div class="hdr-brand">
     <div class="hdr-pip"></div>
-    <span class="hdr-name">DATA CENTER SUSTAINABILITY OPTIMIZER</span>
+    <span class="hdr-name">DATA CENTER SUSTAINABILITY STRATEGY OPTIMIZER</span>
   </div>
   <div class="hdr-right">
     <button class="mode-btn" id="mode-btn" onclick="toggleMode()" title="Toggle light / dark mode">🌙</button>
@@ -408,6 +413,24 @@ body.dark .s3{background:#201830!important;color:#c0a0e8!important}
         <div id="rs-roi-pill"></div>
       </div>
     </div>
+    <!-- MONTHS TO DEPLOY PANEL -->
+    <div class="fin-summary" id="months-deploy-card" style="margin-bottom:8px">
+      <div class="fin-summary-hd" onclick="toggleMonths()" style="cursor:pointer">
+        <span style="font-size:10px;font-weight:600;color:var(--text2);letter-spacing:.04em">MONTHS TO DEPLOY</span>
+        <span style="font-size:10px;color:var(--text3)" id="months-arrow">▼</span>
+      </div>
+      <div id="months-body">
+        <div class="fin-summary-body" style="padding-bottom:8px">
+          <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">
+            <span style="font-size:28px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1" id="v-months-num">—</span>
+            <span style="font-size:12px;color:var(--text3)">months</span>
+            <span style="font-size:10px;color:var(--text3);margin-left:4px" id="v-months-range"></span>
+          </div>
+          <div id="v-months-phases" style="font-size:10px;color:var(--text3);line-height:1.8"></div>
+          <div style="font-size:9px;color:var(--text3);margin-top:6px;font-style:italic" id="v-months-sub">Add upgrades to see deployment timeline</div>
+        </div>
+      </div>
+    </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <span class="section-label">ANNUAL ENVIRONMENTAL IMPACT</span>
     </div>
@@ -420,16 +443,6 @@ body.dark .s3{background:#201830!important;color:#c0a0e8!important}
       <div class="env-val"><span id="v-trees">0</span></div>
       <div class="env-sub">seedlings × 10 yrs · EPA</div>
     </div>
-    <div class="env-card">
-      <div class="env-label">Cars off the road<span class="tip-i" onmouseenter="st(event,'Equivalent passenger vehicles removed from roads for a year. EPA: 4.29 metric tons CO₂e per vehicle/year.')" onmouseleave="ht()">?</span></div>
-      <div class="env-val"><span id="v-cars">0</span></div>
-      <div class="env-sub">4.29 t CO₂/car/yr · EPA</div>
-    </div>
-    <div class="env-card">
-      <div class="env-label">Flights avoided<span class="tip-i" onmouseenter="st(event,'NYC to London economy roundtrips avoided (~1.1 t CO₂ per person, ICAO standard estimate).')" onmouseleave="ht()">?</span></div>
-      <div class="env-val"><span id="v-flights">0</span></div>
-      <div class="env-sub">NYC–London roundtrip · ICAO</div>
-    </div>
     <div class="compliance-box" id="comp-box">
       <div style="font-size:10px;color:var(--text3);margin-bottom:6px">COMPLIANCE COVERAGE</div>
       <div id="v-comp" style="display:flex;gap:4px;flex-wrap:wrap"></div>
@@ -441,19 +454,19 @@ body.dark .s3{background:#201830!important;color:#c0a0e8!important}
 <!-- TABS -->
 <div class="tabs-section">
   <div class="tab-bar">
-    <button class="tab-btn" onclick="showTab('roadmap',this)">🗺 Roadmap</button>
-    <button class="tab-btn on" onclick="showTab('financials',this)">💰 Financials</button>
+    <button class="tab-btn on" onclick="showTab('roadmap',this)">🗺 Roadmap</button>
+    <button class="tab-btn" onclick="showTab('financials',this)">💰 Financials</button>
     <button class="tab-btn" onclick="showTab('benchmarks',this)">📊 Peer Benchmarks</button>
     <button class="tab-btn" onclick="showTab('bizcase',this)">📋 Business Case</button>
   </div>
 
   <!-- ROADMAP -->
-  <div class="tab-panel" id="tab-roadmap">
+  <div class="tab-panel on" id="tab-roadmap">
     <div id="roadmap-content"></div>
   </div>
 
   <!-- FINANCIALS -->
-  <div class="tab-panel on" id="tab-financials">
+  <div class="tab-panel" id="tab-financials">
     <div id="fin-content"></div>
   </div>
 
@@ -475,29 +488,114 @@ body.dark .s3{background:#201830!important;color:#c0a0e8!important}
     <span style="font-size:10px;color:var(--text3)">▶</span>
   </summary>
   <div class="meth-body">
-    <p class="meth-intro">All CO₂ and financial figures are calibrated for a <strong>5 MW mid-size data center baseline</strong> and scale with the facility size selector. CapEx and savings estimates are drawn from published studies, government reports, and vendor case studies — they represent order-of-magnitude figures suitable for business case planning, not formal capital projections. IRA tax credits, utility rebates, and solar PPAs can materially improve ROI figures shown. EPA GHG Equivalencies Calculator conversion factors are used throughout for trees, cars, and flights. PUE baseline of 1.58 and WUE baseline of 1.80 reflect the 2023 global industry averages per Uptime Institute.</p>
-    <div class="src-row" style="border-top:none">
-      <span class="src-tag" style="background:#e8f4e1;color:#2d6a1f">Equivalencies</span>
-      <span>Trees: 16.5 seedlings per metric ton CO₂ grown for 10 years. Cars: 4.29 metric tons CO₂e/vehicle/year. Flights: ~1.1 t CO₂ per person NYC–London economy roundtrip. All from <a href="https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator-calculations-and-references" target="_blank">EPA GHG Equivalencies Calculator</a>.</span>
+    <p class="meth-intro">All CO₂, financial, and deployment figures are calibrated for a <strong>5 MW mid-size data center baseline</strong> and scale proportionally with the facility size selector. CapEx, savings, and acquisition time estimates are drawn from peer-reviewed studies, government reports, and vendor case studies — suitable for order-of-magnitude business case planning, not formal capital budgeting. IRA tax credits, utility rebates, and solar PPAs can materially improve ROI. EPA GHG Equivalencies Calculator factors underpin all tree, car, and flight equivalencies. PUE baseline of 1.58 and WUE baseline of 1.80 reflect the 2023 global industry averages per Uptime Institute Annual Data Center Survey. Slot infrastructure cost of $250k/slot at 5 MW baseline reflects real-world rack provisioning costs (PDU, cooling hookups, structured cabling, floor space) per industry operator estimates.</p>
+
+    <div style="overflow-x:auto;margin-top:4px">
+    <table style="width:100%;border-collapse:collapse;font-size:11.5px">
+      <thead>
+        <tr style="border-bottom:1.5px solid var(--border)">
+          <th style="text-align:left;padding:7px 10px 7px 0;font-weight:600;color:var(--text2);width:160px">Upgrade</th>
+          <th style="text-align:left;padding:7px 10px;font-weight:600;color:var(--text2)">CO₂ / yr</th>
+          <th style="text-align:left;padding:7px 10px;font-weight:600;color:var(--text2)">CapEx (5 MW)</th>
+          <th style="text-align:left;padding:7px 10px;font-weight:600;color:var(--text2)">Annual savings</th>
+          <th style="text-align:left;padding:7px 10px;font-weight:600;color:var(--text2)">Time to deploy</th>
+          <th style="text-align:left;padding:7px 10px;font-weight:600;color:var(--text2)">Key source</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:0.5px solid var(--border)">
+          <td style="padding:8px 10px 8px 0;font-weight:500;color:var(--text)">Solar Array</td>
+          <td style="padding:8px 10px;color:var(--text2)">~450 t</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$3.5M</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$700k/yr</td>
+          <td style="padding:8px 10px;color:var(--text2)">24–36 months</td>
+          <td style="padding:8px 10px;color:var(--text2)"><a href="https://www.solarfeeds.com/mag/solar-for-data-centers-reducing-costs-and-carbon-footprint/" target="_blank">SolarFeeds</a>; LBNL; IEA 2024</td>
+        </tr>
+        <tr style="border-bottom:0.5px solid var(--border)">
+          <td style="padding:8px 10px 8px 0;font-weight:500;color:var(--text)">Liquid Cooling</td>
+          <td style="padding:8px 10px;color:var(--text2)">~280 t</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$1.2M</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$480k/yr</td>
+          <td style="padding:8px 10px;color:var(--text2)">12–24 months</td>
+          <td style="padding:8px 10px;color:var(--text2)"><a href="https://blog.google/company-news/outreach-and-initiatives/sustainability/our-commitment-to-climate-conscious-data-center-cooling/" target="_blank">Google 2021</a>; <a href="https://www.sciencedirect.com/science/article/pii/S2666792426000089" target="_blank">ScienceDirect 2025</a></td>
+        </tr>
+        <tr style="border-bottom:0.5px solid var(--border)">
+          <td style="padding:8px 10px 8px 0;font-weight:500;color:var(--text)">Server Virtualization</td>
+          <td style="padding:8px 10px;color:var(--text2)">~320 t</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$400k</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$520k/yr</td>
+          <td style="padding:8px 10px;color:var(--text2)">1–6 months</td>
+          <td style="padding:8px 10px;color:var(--text2)"><a href="https://spectrum.ieee.org/data-center-sustainability-metrics" target="_blank">IEEE Spectrum 2026</a>; Univ. of Waterloo</td>
+        </tr>
+        <tr style="border-bottom:0.5px solid var(--border)">
+          <td style="padding:8px 10px 8px 0;font-weight:500;color:var(--text)">Battery Storage</td>
+          <td style="padding:8px 10px;color:var(--text2)">~180 t</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$2M</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$250k/yr</td>
+          <td style="padding:8px 10px;color:var(--text2)">12–24 months</td>
+          <td style="padding:8px 10px;color:var(--text2)"><a href="https://www.scalemicrogrids.com/blog/solar-microgrids-for-data-centers-not-as-crazy-as-it-sounds" target="_blank">Scale Microgrids / Stripe 2025</a></td>
+        </tr>
+        <tr style="border-bottom:0.5px solid var(--border)">
+          <td style="padding:8px 10px 8px 0;font-weight:500;color:var(--text)">Free Air Cooling</td>
+          <td style="padding:8px 10px;color:var(--text2)">~200 t</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$600k</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$340k/yr</td>
+          <td style="padding:8px 10px;color:var(--text2)">6–12 months</td>
+          <td style="padding:8px 10px;color:var(--text2)"><a href="https://www.energy.ca.gov/publications/2024/demonstration-low-cost-data-center-liquid-cooling" target="_blank">California Energy Commission 2024</a></td>
+        </tr>
+        <tr style="border-bottom:0.5px solid var(--border)">
+          <td style="padding:8px 10px 8px 0;font-weight:500;color:var(--text)">Smart PDU</td>
+          <td style="padding:8px 10px;color:var(--text2)">~150 t</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$200k</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$180k/yr</td>
+          <td style="padding:8px 10px;color:var(--text2)">1–3 months</td>
+          <td style="padding:8px 10px;color:var(--text2)"><a href="https://venturebeat.com/data-infrastructure/revolutionizing-data-center-cooling-a-path-to-energy-efficiency-and-sustainability" target="_blank">VentureBeat 2024</a></td>
+        </tr>
+        <tr style="border-bottom:0.5px solid var(--border)">
+          <td style="padding:8px 10px 8px 0;font-weight:500;color:var(--text)">AI Load Balancing</td>
+          <td style="padding:8px 10px;color:var(--text2)">~240 t</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$380k</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$380k/yr</td>
+          <td style="padding:8px 10px;color:var(--text2)">6–12 months</td>
+          <td style="padding:8px 10px;color:var(--text2)"><a href="https://news.cornell.edu/stories/2025/11/roadmap-shows-environmental-impact-ai-data-center-boom" target="_blank">Cornell University 2025</a></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px 8px 0;font-weight:500;color:var(--text)">Heat Recovery</td>
+          <td style="padding:8px 10px;color:var(--text2)">~120 t</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$700k</td>
+          <td style="padding:8px 10px;color:var(--text2)">~$160k/yr</td>
+          <td style="padding:8px 10px;color:var(--text2)">12–18 months</td>
+          <td style="padding:8px 10px;color:var(--text2)"><a href="https://www.sciencedirect.com/science/article/pii/S0306261923018378" target="_blank">Applied Energy 2024</a></td>
+        </tr>
+      </tbody>
+    </table>
     </div>
-    <div class="src-row"><span class="src-tag" style="background:#fef8ee;color:#8a5a00">Solar Array</span><span><strong>CO₂:</strong> ~450 t/yr · <strong>CapEx:</strong> ~$3.5M (utility-scale ~$0.50–$0.70/W installed) · <strong>Savings:</strong> ~$700k/yr at $0.08/kWh. Lawrence Berkeley National Laboratory: utility-scale solar saves 175–198 t CO₂/acre/yr. IEA (2024): global solar avoids ~1.4 Gt/yr. Source: <a href="https://www.solarfeeds.com/mag/solar-for-data-centers-reducing-costs-and-carbon-footprint/" target="_blank">SolarFeeds</a>, <a href="https://8msolar.com/solar-powered-data-centers/" target="_blank">8MSolar</a>.</span></div>
-    <div class="src-row"><span class="src-tag" style="background:#e6f0fa;color:#0f4a8a">Liquid Cooling</span><span><strong>CO₂:</strong> ~280 t/yr · <strong>CapEx:</strong> ~$1.2M · <strong>Savings:</strong> ~$480k/yr (12% total facility energy reduction). Google: water cooling reduced global portfolio footprint by ~300,000 t CO₂ in 2021. Sources: <a href="https://blog.google/company-news/outreach-and-initiatives/sustainability/our-commitment-to-climate-conscious-data-center-cooling/" target="_blank">Google</a>; <a href="https://www.sciencedirect.com/science/article/pii/S2666792426000089" target="_blank">ScienceDirect 2025</a>.</span></div>
-    <div class="src-row"><span class="src-tag" style="background:#ede8ff;color:#5c3daa">Server Virtualization</span><span><strong>CO₂:</strong> ~320 t/yr (Scope 1+2+3) · <strong>CapEx:</strong> ~$400k · <strong>Savings:</strong> ~$520k/yr; break-even often &lt;1 year. Reduces Scope 3 by lowering physical server demand and manufacturing emissions. University of Waterloo: 30% energy reductions from architecture changes alone. Source: <a href="https://spectrum.ieee.org/data-center-sustainability-metrics" target="_blank">IEEE Spectrum 2026</a>.</span></div>
-    <div class="src-row"><span class="src-tag" style="background:#e8f4e1;color:#2d6a1f">Battery Storage</span><span><strong>CO₂:</strong> ~180 t/yr · <strong>CapEx:</strong> ~$2M (2 MWh BESS at ~$800–$1,000/kWh) · <strong>Savings:</strong> ~$250k/yr via demand charge reduction. Longer break-even (~8 yrs) but provides grid resilience. Source: <a href="https://www.scalemicrogrids.com/blog/solar-microgrids-for-data-centers-not-as-crazy-as-it-sounds" target="_blank">Scale Microgrids / Stripe 2025</a>.</span></div>
-    <div class="src-row"><span class="src-tag" style="background:#e0f5ef;color:#0f5a45">Free Air Cooling</span><span><strong>CO₂:</strong> ~200 t/yr · <strong>CapEx:</strong> ~$600k · <strong>Savings:</strong> ~$340k/yr. Cooling accounts for ~40% of facility energy; economizers cut mechanical cooling 50–80% in temperate climates. Source: <a href="https://www.energy.ca.gov/publications/2024/demonstration-low-cost-data-center-liquid-cooling" target="_blank">California Energy Commission 2024</a>.</span></div>
-    <div class="src-row"><span class="src-tag" style="background:#fdeaea;color:#9a2020">Smart PDU</span><span><strong>CO₂:</strong> ~150 t/yr · <strong>CapEx:</strong> ~$200k · <strong>Savings:</strong> ~$180k/yr (3–5% total energy via idle elimination). EkkoSense: ~4,100 t CO₂e/yr reductions across customer base. Source: <a href="https://venturebeat.com/data-infrastructure/revolutionizing-data-center-cooling-a-path-to-energy-efficiency-and-sustainability" target="_blank">VentureBeat 2024</a>.</span></div>
-    <div class="src-row"><span class="src-tag" style="background:#fdeef4;color:#8a1a5a">AI Load Balancing</span><span><strong>CO₂:</strong> ~240 t/yr · <strong>CapEx:</strong> ~$380k · <strong>Savings:</strong> ~$380k/yr (10–12% total energy). Cornell University (2025): AI-driven scheduling + advanced cooling could cut DC CO₂ by up to 73% vs. worst-case AI growth. Source: <a href="https://news.cornell.edu/stories/2025/11/roadmap-shows-environmental-impact-ai-data-center-boom" target="_blank">Cornell Chronicle 2025</a>.</span></div>
-    <div class="src-row"><span class="src-tag" style="background:#f5f5f0;color:#555540">Heat Recovery</span><span><strong>CO₂:</strong> ~120 t/yr · <strong>CapEx:</strong> ~$700k · <strong>Savings:</strong> ~$160k/yr. Waste heat recovery reduces CO₂ by 3,000–9,200 t/yr in 4.5–13.5 MW facilities, payback under 2.6 years. Source: <a href="https://www.sciencedirect.com/science/article/pii/S0306261923018378" target="_blank">Applied Energy 2024</a>.</span></div>
-    <div class="src-row"><span class="src-tag" style="background:#e6f0fa;color:#0f4a8a">Carbon pricing</span><span>Internal carbon prices of $50–$200/ton reflect enterprise planning ranges. IEA: $130+/ton needed for net-zero pathways by 2050. SEC climate disclosure rules (US, 2024–2026) and EU CSRD (mandatory 2024+) are driving internal carbon price adoption.</span></div>
-    <div class="src-row"><span class="src-tag" style="background:#ede8ff;color:#5c3daa">Compliance</span><span><strong>CSRD</strong> EU Corporate Sustainability Reporting Directive · <strong>Scope 2</strong> indirect emissions from purchased electricity · <strong>Scope 3</strong> value chain emissions including hardware manufacturing · <strong>ISO 50001</strong> energy management standard · <strong>RE100</strong> 100% renewable commitment · <strong>SEC Climate</strong> US disclosure requirements · <strong>Grid Resilience</strong> reduced grid dependency.</span></div>
-    <p class="meth-disc">Figures are illustrative estimates for educational use only. Break-even calculations assume constant energy prices and exclude maintenance, equipment degradation, and policy incentives which typically improve ROI materially. Peer benchmark figures from public disclosures: Google Environmental Report 2023, Microsoft Environmental Sustainability Report 2023, AWS Sustainability Report 2023, Uptime Institute Global Data Center Survey 2023.</p>
+
+    <div class="src-row" style="border-top:0.5px solid var(--border);margin-top:12px">
+      <span class="src-tag" style="background:#e8f4e1;color:#2d6a1f">Equivalencies</span>
+      <span>Trees: 16.5 seedlings/t CO₂ grown 10 years. Cars: 4.29 t CO₂e/vehicle/yr. Flights: ~1.1 t CO₂ NYC–London economy roundtrip. All from <a href="https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator-calculations-and-references" target="_blank">EPA GHG Equivalencies Calculator</a>. 1 t CO₂ = 16.5 tree seedlings (10-yr sequestration, urban mix per USFS).</span>
+    </div>
+    <div class="src-row">
+      <span class="src-tag" style="background:#e6f0fa;color:#0f4a8a">Carbon pricing</span>
+      <span>Internal carbon prices of $50–$200/ton reflect enterprise planning ranges. IEA Net Zero Emissions scenario requires $130+/ton by 2030. SEC climate disclosure rules (US, phased 2024–2026) and EU CSRD (mandatory for large companies from 2024) are driving adoption of internal carbon pricing as a formal planning tool.</span>
+    </div>
+    <div class="src-row">
+      <span class="src-tag" style="background:#ede8ff;color:#5c3daa">Compliance tags</span>
+      <span><strong>CSRD</strong> EU Corporate Sustainability Reporting Directive · <strong>Scope 2</strong> indirect emissions from purchased electricity · <strong>Scope 3</strong> value-chain emissions incl. hardware manufacturing · <strong>ISO 50001</strong> energy management standard · <strong>RE100</strong> 100% renewable commitment · <strong>SEC Climate</strong> US disclosure requirements · <strong>Grid Resilience</strong> reduced grid dependency.</span>
+    </div>
+    <div class="src-row">
+      <span class="src-tag" style="background:#fef3dc;color:#8a5a00">Benchmarks</span>
+      <span>PUE and WUE peer figures from public disclosures: <a href="https://sustainability.google/reports/google-2023-environmental-report/" target="_blank">Google Environmental Report 2023</a> (PUE 1.10, WUE 1.10) · <a href="https://blogs.microsoft.com/on-the-issues/2023/05/10/microsoft-2023-environmental-sustainability-report/" target="_blank">Microsoft Environmental Sustainability Report 2023</a> (PUE 1.18, WUE 1.12) · <a href="https://sustainability.aboutamazon.com/" target="_blank">AWS Sustainability Report 2023</a> (PUE 1.22, WUE 1.35) · <a href="https://uptimeinstitute.com/resources/research-and-reports/uptime-institute-global-data-center-survey-results-2023" target="_blank">Uptime Institute Global Survey 2023</a> (industry avg PUE 1.58, WUE 1.80).</span>
+    </div>
+    <div class="src-row">
+      <span class="src-tag" style="background:#f5f5f0;color:#555540">Slot costs</span>
+      <span>Infrastructure provisioning cost of ~$250k/slot at 5 MW baseline reflects PDU circuit installation, cooling distribution hookup, structured cabling, and floor space prep. Scales with facility size. Does not include IT equipment cost. Based on operator cost benchmarks from <a href="https://uptimeinstitute.com" target="_blank">Uptime Institute</a> and <a href="https://www.datacenterdynamics.com" target="_blank">Data Center Dynamics</a> industry surveys.</span>
+    </div>
+    <p class="meth-disc">All figures are illustrative estimates for educational and planning purposes only. Break-even calculations assume constant energy prices and exclude maintenance costs, equipment degradation, and policy incentives. Time-to-deploy estimates reflect typical project timelines; actual timelines depend on vendor availability, permitting, utility coordination, and organizational readiness. Consult a certified energy auditor and licensed electrical engineer for facility-specific projections.</p>
   </div>
 </details>
 
-</div><!-- /app -->
-
 <script>
-/* ═══════════════ DATA ═══════════════ */
 const SIZES=[
   {id:'edge',      label:'Edge',       sub:'~1 MW',  cm:0.20, fm:0.28, sm:0.19},
   {id:'mid',       label:'Mid-size',   sub:'~5 MW',  cm:1,    fm:1,    sm:1},
@@ -555,11 +653,12 @@ const PHASE_META=[
 
 /* ═══════════════ STATE ═══════════════ */
 let gridSlots=8;
-let slotExpansionCost=0; // cumulative CapEx paid for extra slots
+let slotExpansionCost=0;
+let qty={}; // upgrade id -> quantity (how many to drag in at once) // cumulative CapEx paid for extra slots
 let grid=new Array(gridSlots).fill(null),sIdx=1,cpIdx=0,energyRate=0.08;
 let finSummaryOpen=true;
 let dragId=null,dragSrc=null,dragCi=null;
-const cur={co2:0,trees:0,cars:0,flights:0};
+const cur={co2:0,trees:0};
 let obStep=0;
 
 /* ═══════════════ INIT UI ═══════════════ */
@@ -650,9 +749,21 @@ function rPool(){
         <div class="pool-name">${u.name}</div>
         <div class="pool-meta">${u.co2}t CO₂/yr · ${fmt(u.capex)} capex</div>
         <div class="pool-tags">
-          <span class="cplx c${u.cplx}" title="${u.time}">${u.cplx==='L'?'Low effort':u.cplx==='M'?'Medium effort':'High effort'}</span>
-          <span style="font-size:10px;color:var(--text3)">Phase ${u.phase}</span>
+          <span class="cplx c${u.cplx}">${u.cplx==='L'?'Low effort':u.cplx==='M'?'Medium effort':'High effort'}</span>
+
           ${u.scope3?'<span class="s3">Scope 3 ✓</span>':''}
+        </div>
+        <div style="font-size:9.5px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:4px">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--text3);flex-shrink:0"></span>
+          ${u.time} to deploy
+        </div>
+        <div style="display:flex;align-items:center;margin-top:7px;gap:0">
+          <div class="qty-ctrl">
+            <button class="qty-btn" id="qty-min-${u.id}" onclick="setQty('${u.id}',-1,event)" ${getQty(u.id)<=1?'disabled':''}>−</button>
+            <span class="qty-num" id="qty-num-${u.id}">${getQty(u.id)}</span>
+            <button class="qty-btn" id="qty-add-${u.id}" onclick="setQty('${u.id}',1,event)" ${getQty(u.id)>=gridSlots?'disabled':''}>+</button>
+          </div>
+          <span class="qty-label">${getQty(u.id)>1?`× ${getQty(u.id)} slots`:'qty'}</span>
         </div>
       </div>
     </div>`).join('');;
@@ -671,7 +782,8 @@ function rGrid(){
         <button class="rm-x" onclick="rmC(event,${i})" title="Remove">×</button>
         <div class="badge" style="background:${u.bg};color:${u.tc}">${u.abbr}</div>
         <div style="font-size:9px;font-weight:600;text-align:center;line-height:1.3;pointer-events:none;color:var(--text)">${u.name}</div>
-        <div style="font-size:8.5px;color:var(--text3);pointer-events:none">${u.co2}t · ${fmt(u.capex)}</div>
+        <div style="font-size:8px;color:var(--text3);pointer-events:none;text-align:center">${u.co2}t · ${fmt(u.capex)}</div>
+        <div style="font-size:7.5px;color:var(--text3);pointer-events:none;text-align:center;opacity:.85">${u.time}</div>
       </div></div>`;
     return`<div class="dc-cell empty-cell" data-ci="${i}"
       ondragover="cOv(event,${i})" ondragleave="cLv(event)" ondrop="cDr(event,${i})">
@@ -688,8 +800,35 @@ function rMetrics(){
   const co2=Math.round(rawCO2*S.cm);
   animV('v-co2',co2,'co2');
   animV('v-trees',Math.round(co2*16.5),'trees');
-  animV('v-cars',Math.round(co2/4.29),'cars');
-  animV('v-flights',Math.round(co2/1.1),'flights');
+  // Months to deploy
+  const mNum=document.getElementById('v-months-num');
+  const mRange=document.getElementById('v-months-range');
+  const mPhases=document.getElementById('v-months-phases');
+  const mSub=document.getElementById('v-months-sub');
+  if(mNum){
+    if(placed.length){
+      const maxPhase=Math.max(...placed.map(u=>u.phase));
+      const monthsMap={1:2,2:12,3:30};
+      const rangeMap={1:'(1–3 mo)',2:'(6–18 mo)',3:'(24–36 mo)'};
+      mNum.textContent=monthsMap[maxPhase];
+      if(mRange) mRange.textContent=rangeMap[maxPhase];
+      // Phase breakdown
+      const phaseNames={1:'Phase 1 · Quick wins',2:'Phase 2 · Infrastructure',3:'Phase 3 · Capital projects'};
+      const phaseRanges={1:'0–90 days',2:'6–18 months',3:'24–36 months'};
+      let lines=[];
+      [1,2,3].forEach(ph=>{
+        const items=placed.filter(u=>u.phase===ph);
+        if(items.length) lines.push(`<span style="color:var(--text2)">${phaseNames[ph]}:</span> ${items.map(u=>u.name).join(', ')} <span style="opacity:.6">(${phaseRanges[ph]})</span>`);
+      });
+      if(mPhases) mPhases.innerHTML=lines.join('<br>');
+      if(mSub) mSub.textContent=maxPhase>1?'Includes procurement, permitting & utility coordination':'Quick-win upgrades only · fast-track approval likely';
+    } else {
+      mNum.textContent='—';
+      if(mRange) mRange.textContent='';
+      if(mPhases) mPhases.innerHTML='';
+      if(mSub) mSub.textContent='Add upgrades to see deployment timeline';
+    }
+  }
   const pct=Math.min(100,Math.round(rawCO2/(MAX_CO2_PER_SLOT*gridSlots)*100));
   document.getElementById('pct').textContent=pct+'%';
   document.getElementById('prog-bar').style.width=pct+'%';
@@ -877,7 +1016,7 @@ function rBenchmarks(){
         <div class="bench-title">${title}</div>
         <span class="tip-i" onmouseenter="st(event,'${tipText}')" onmouseleave="ht()">?</span>
       </div>
-      ${placed.length?`<div class="bench-pct">Your ${yourLabel}: better than ${pctile}% of peers shown</div>`:''}
+      ${placed.length?`<div class="bench-pct">${yourLabel}: better than ${pctile}% of peers shown</div>`:''}
       ${rows.join('')}${youRow}
       <div class="bench-legend">
         <span><span class="bench-dot" style="background:#4285F4"></span>Google</span>
@@ -961,15 +1100,16 @@ COMPLIANCE COVERAGE
 ${allTags.join(' · ')}
 
 IMPLEMENTATION ROADMAP
-Phase 1 (0–90 days):   ${placed.filter(u=>u.phase===1).map(u=>u.name).join(', ')||'—'}
-Phase 2 (6–18 months): ${placed.filter(u=>u.phase===2).map(u=>u.name).join(', ')||'—'}
-Phase 3 (2–3 years):   ${placed.filter(u=>u.phase===3).map(u=>u.name).join(', ')||'—'}
+Phase 1 (0–90 days):   ${placed.filter(u=>u.phase===1).map(u=>`${u.name} (${u.time})`).join(', ')||'—'}
+Phase 2 (6–18 months): ${placed.filter(u=>u.phase===2).map(u=>`${u.name} (${u.time})`).join(', ')||'—'}
+Phase 3 (2–3 years):   ${placed.filter(u=>u.phase===3).map(u=>`${u.name} (${u.time})`).join(', ')||'—'}
 
 KEY NOTES
 • CapEx may be materially reduced via IRA tax credits, utility rebates, and solar PPAs
 • Figures are illustrative estimates scaled to a ${S.sub} facility
 • Consult a certified energy auditor for facility-specific projections
 • All financial projections assume constant energy prices and exclude maintenance costs
+• Total calendar time to full deployment: ~${placed.length?Math.max(...placed.map(u=>u.phase))===3?'2-3 years':Math.max(...placed.map(u=>u.phase))===2?'12-18 months':'0-90 days':'—'}
 
 SOURCES
 EPA GHG Equivalencies Calculator · IEA 2024
@@ -982,7 +1122,7 @@ California Energy Commission 2024 · Uptime Institute 2023`;
     `Upgrading from PUE ${BASE_PUE} to ${pue.toFixed(2)} puts your facility ahead of the ${PEERS_PUE.filter(p=>pue<p.val&&!p.you).map(p=>p.name).join(', ')||'industry average'}.`,
     `The ${placed.filter(u=>u.phase===1).length} quick-win upgrade${placed.filter(u=>u.phase===1).length!==1?'s':''} in Phase 1 ${placed.filter(u=>u.phase===1).length?`(${placed.filter(u=>u.phase===1).map(u=>u.name).join(', ')}) pay`:'pay'}s back in months — a strong proof-of-concept before committing to Phase 3 capital.`,
     yr10>0?`The 10-year net return of ${fmt(yr10)} frames this as a capital allocation decision, not a cost center.`:`Adding an internal carbon price of $${CPS[1].v}/t would bring the 10-year net to ${fmt(placed.reduce((s,u)=>s+u.sav,0)*S.sm*10 - capex + rawCO2*S.cm*CPS[1].v*10)}.`,
-    `${allTags.includes('CSRD')?'CSRD and ':''} ${allTags.includes('SEC Climate')?'SEC climate disclosure rules are mandatory':'Regulatory pressure is increasing'} — these upgrades position the organization ahead of required reporting timelines.`,
+    `${allTags.includes('CSRD')&&allTags.includes('SEC Climate')?'CSRD and SEC climate disclosure rules are both mandatory':allTags.includes('CSRD')?'CSRD reporting is now mandatory':'Regulatory pressure is increasing'} — these upgrades position the organization ahead of required reporting timelines.`,
   ];
 
   document.getElementById('bc-content').innerHTML=`
@@ -1054,8 +1194,20 @@ function cDr(e,i){
   e.preventDefault();if(!dragId)return;
   const upg=UPG.find(u=>u.id===dragId);if(!upg)return;
   const ng=[...grid];
-  if(dragSrc==='cell'&&dragCi!=null){const tmp=ng[i];ng[i]=ng[dragCi];ng[dragCi]=tmp;}
-  else ng[i]=upg;
+  if(dragSrc==='cell'&&dragCi!=null){
+    // simple swap when dragging from grid
+    const tmp=ng[i];ng[i]=ng[dragCi];ng[dragCi]=tmp;
+  } else {
+    // placing from pool — fill qty empty slots starting at drop target
+    const q=getQty(upg.id);
+    if(q===1){
+      ng[i]=upg;
+    } else {
+      // collect empty slot indices (prefer dropped slot first, then find others)
+      const empties=[i,...ng.map((_,idx)=>idx).filter(idx=>idx!==i&&!ng[idx])].slice(0,q);
+      empties.forEach(si=>{ ng[si]=upg; });
+    }
+  }
   grid=ng;dEnd();render();
 }
 function rmC(e,i){e.stopPropagation();e.preventDefault();grid[i]=null;render();}
@@ -1094,7 +1246,7 @@ window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{
 /* ═══════════════ RESET ═══════════════ */
 function resetAll(){
   if(!grid.filter(Boolean).length && sIdx===1 && cpIdx===0) return;
-  gridSlots=8; slotExpansionCost=0; grid=new Array(8).fill(null);
+  gridSlots=8; slotExpansionCost=0; qty={}; grid=new Array(8).fill(null);
   sIdx=1; cpIdx=0; energyRate=0.08; sortKey='default';
   updateSlotButtons();
   document.querySelectorAll('.sz-btn').forEach((b,i)=>b.classList.toggle('on',i===1));
@@ -1134,16 +1286,31 @@ function sortedUPG(){
 }
 function setSort(k){
   sortKey=k;
-  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.toggle('on',b.dataset.sk===k));
   rPool();
 }
 function rSortBar(){
   document.getElementById('sort-bar').innerHTML=
-    '<span class="sort-lbl">Sort:</span>'+
-    SORTS.map(s=>`<button class="sort-btn${s.k===sortKey?' on':''}" data-sk="${s.k}" onclick="setSort('${s.k}')">${s.l}</button>`).join('');
+    '<span style="font-size:10px;color:var(--text3);flex-shrink:0">Sort:</span>'+
+    `<select class="sort-select" onchange="setSort(this.value)">${SORTS.map(s=>`<option value="${s.k}"${s.k===sortKey?' selected':''}>${s.l}</option>`).join('')}</select>`;
 }
 
 
+
+/* ═══════════════ QUANTITY ═══════════════ */
+function getQty(id){ return qty[id]||1; }
+function setQty(id,delta,e){
+  e.stopPropagation();e.preventDefault();
+  const cur=getQty(id);
+  const next=Math.max(1,Math.min(gridSlots,cur+delta));
+  qty[id]=next;
+  // update just the qty display
+  const numEl=document.getElementById('qty-num-'+id);
+  const minBtn=document.getElementById('qty-min-'+id);
+  const addBtn=document.getElementById('qty-add-'+id);
+  if(numEl) numEl.textContent=next;
+  if(minBtn) minBtn.disabled=(next<=1);
+  if(addBtn) addBtn.disabled=(next>=gridSlots);
+}
 /* ═══════════════ EXPAND GRID ═══════════════ */
 function updateSlotButtons(){
   const shrink=document.getElementById('shrink-btn');
@@ -1209,6 +1376,14 @@ function cancelShrink(){
 }
 
 /* ═══════════════ FIN SUMMARY TOGGLE ═══════════════ */
+function toggleMonths(){
+  const body=document.getElementById('months-body');
+  const arrow=document.getElementById('months-arrow');
+  if(!body) return;
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  if(arrow) arrow.textContent=open?'▶':'▼';
+}
 function toggleFinSummary(){
   finSummaryOpen=!finSummaryOpen;
   document.getElementById('fin-summary-body').style.display=finSummaryOpen?'block':'none';
