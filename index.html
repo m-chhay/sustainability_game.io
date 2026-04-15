@@ -37,8 +37,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 /* ── SPOTLIGHT TOUR ── */
 #tour-overlay{position:fixed;inset:0;z-index:400;pointer-events:none;display:none}
 #tour-overlay.active{display:block}
-#tour-cutout{position:absolute;border-radius:12px;transition:all .35s cubic-bezier(.4,0,.2,1);box-shadow:0 0 0 9999px rgba(10,8,5,.72);pointer-events:none}
-#tour-callout{position:absolute;background:var(--surface);border-radius:13px;padding:18px 20px 16px;max-width:268px;width:268px;pointer-events:all;transition:left .32s ease,top .32s ease;overflow:visible;position:absolute}
+#tour-cutout{position:absolute;border-radius:12px;transition:all .3s cubic-bezier(.4,0,.2,1);box-shadow:0 0 0 9999px rgba(10,8,5,.72);pointer-events:none;width:0;height:0;opacity:0}
+#tour-callout{position:absolute;background:var(--surface);border-radius:13px;padding:18px 20px 16px;max-width:268px;width:268px;pointer-events:all;transition:left .28s ease,top .28s ease,opacity .18s ease;overflow:visible;opacity:0;left:-9999px;top:-9999px}
 
 .tc-step{font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--green-m);margin-bottom:5px;display:flex;align-items:center;gap:6px}
 .tc-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:5px;line-height:1.3}
@@ -109,7 +109,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .badge{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:8.5px;font-weight:500;flex-shrink:0;pointer-events:none;letter-spacing:.05em}
 .pool-name{font-size:12px;font-weight:600;margin-bottom:1px;color:var(--text)}
 .pool-meta{font-size:10px;color:var(--text3);margin-bottom:5px}
-.pool-tags{display:flex;gap:3px;flex-wrap:wrap;align-items:center}
+.pool-tags{display:flex;gap:4px;flex-wrap:wrap;align-items:center;line-height:1}
 .ctag{font-size:10px;padding:2px 6px;border-radius:3px;white-space:nowrap;line-height:1.8;font-weight:500}
 .cplx{font-size:10px;padding:2px 7px;border-radius:3px;font-weight:600;white-space:nowrap}
 .cL{background:#e0f5ef;color:#0a5040}.cM{background:#e6f0fa;color:#0f4a8a}.cH{background:#ede8ff;color:#4a2d9a}
@@ -790,16 +790,24 @@ function renderTourStep(){
       return;
     }
     el.scrollIntoView({behavior:'smooth',block:'nearest'});
+    // hide before repositioning to prevent flash at old position
+    const co=document.getElementById('tour-callout');
+    const cut=document.getElementById('tour-cutout');
+    if(co) co.style.opacity='0';
+    if(cut){cut.style.opacity='0';cut.style.width='0';cut.style.height='0';}
     setTimeout(()=>{
       const pad=14;
       const r=el.getBoundingClientRect();
-      const cut=document.getElementById('tour-cutout');
-      // overlay is position:fixed — use viewport coords directly (no scrollY)
-      cut.style.left=(r.left-pad)+'px';
-      cut.style.top=(r.top-pad)+'px';
-      cut.style.width=(r.width+pad*2)+'px';
-      cut.style.height=(r.height+pad*2)+'px';
+      if(cut){
+        cut.style.left=(r.left-pad)+'px';
+        cut.style.top=(r.top-pad)+'px';
+        cut.style.width=(r.width+pad*2)+'px';
+        cut.style.height=(r.height+pad*2)+'px';
+        cut.style.opacity='1';
+      }
       posCallout(r,step.arrow||'top',pad);
+      // fade callout in after position is set
+      setTimeout(()=>{if(co) co.style.opacity='1';},40);
     },320);
   }
 }
@@ -911,9 +919,7 @@ function rPool(){
         <div class="pool-name">${u.name}</div>
         <div class="pool-meta">${u.co2}t CO₂/yr · ${fmt(u.capex)} capex</div>
         <div class="pool-tags">
-          <span class="cplx c${u.cplx}">${u.cplx==='L'?'Low effort':u.cplx==='M'?'Medium effort':'High effort'}</span>
-
-          ${u.scope3?'<span class="s3">Scope 3 ✓</span>':''}
+          <span class="cplx c${u.cplx}">${u.cplx==='L'?'Low effort':u.cplx==='M'?'Medium effort':'High effort'}</span>${u.scope3?' <span class="s3">Scope 3 ✓</span>':''}
         </div>
         <div style="font-size:9.5px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:4px">
           <span style="display:inline-block;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--text3);flex-shrink:0"></span>
@@ -1011,13 +1017,6 @@ function rMetrics(){
 /* ═══════════════ RENDER: ROADMAP ═══════════════ */
 function rRoadmap(){
   const placed=grid.filter(Boolean);
-  if(!placed.length){
-    document.getElementById('roadmap-content').innerHTML=`<div class="empty-state">
-      <div class="empty-icon">🗺</div>
-      <div class="empty-title">Your implementation roadmap will appear here</div>
-      <div class="empty-body">Drag upgrades into your data center to see a phased 90-day → 3-year plan, grouped by implementation complexity.</div>
-    </div>`;return;
-  }
   const S=SIZES[sIdx];
   let html='<div class="phases">';
   PHASE_META.forEach(ph=>{
@@ -1038,7 +1037,10 @@ function rRoadmap(){
             <div style="font-size:11.5px;font-weight:500;color:var(--text)">${u.name}</div>
             <div style="font-size:10px;color:var(--text3)">${u.time} · ${fmt(u.capex*S.fm)} capex</div>
           </div>
-        </div>`).join(''):'<div class="phase-empty">No upgrades in this phase yet</div>'}
+        </div>`).join(''):`<div class="phase-empty">
+          <div style="font-size:11px;color:var(--text3);font-style:italic;padding:16px 0 8px;text-align:center">No upgrades in this phase</div>
+          <div style="font-size:10px;color:var(--border2);text-align:center">Drag upgrades from the left panel</div>
+        </div>`}
       </div>
       ${items.length?`<div class="phase-totals">
         <span style="color:var(--green);font-weight:500">${phCo2.toLocaleString()} t CO₂/yr saved</span>
@@ -1049,6 +1051,7 @@ function rRoadmap(){
   html+='</div>';
   document.getElementById('roadmap-content').innerHTML=html;
 }
+
 
 /* ═══════════════ RENDER: FINANCIALS ═══════════════ */
 function rFinancials(){
@@ -1526,13 +1529,41 @@ function cancelShrink(){
 }
 
 
+
+/* ═══════════════ RIGHT-RAIL FIN SUMMARY ═══════════════ */
+function rFinSummary(){
+  const S=SIZES[sIdx], placed=grid.filter(Boolean);
+  const set=(id,txt,col)=>{const el=document.getElementById(id);if(el){el.textContent=txt;if(col)el.style.color=col;else el.style.color='';}};
+  const hint=document.getElementById('scroll-hint');
+  if(!placed.length){
+    set('rs-capex','—');set('rs-annual','—');set('rs-be','—');
+    if(hint) hint.style.display='none';
+    return;
+  }
+  const rawCO2=placed.reduce((s,u)=>s+u.co2,0);
+  const upgradeCapex=placed.reduce((s,u)=>s+u.capex,0)*S.fm;
+  const capex=upgradeCapex+slotExpansionCost;
+  const carbonVal=rawCO2*S.cm*CPS[cpIdx].v;
+  const annual=placed.reduce((s,u)=>s+u.sav,0)*S.sm+carbonVal;
+  const be=annual>0?capex/annual:null;
+  set('rs-capex', fmt(capex));
+  set('rs-annual', fmt(annual)+'/yr', 'var(--green)');
+  set('rs-be', be?(be<1?'< 1 yr':be.toFixed(1)+' yrs'):'—');
+  if(hint) hint.style.display=placed.length>=1?'block':'none';
+}
+
 /* ═══════════════ MAIN RENDER ═══════════════ */
 function render(){
   rSortBar();rPool();rGrid();rMetrics();rFinSummary();
+  // Always re-render whichever tab is currently visible
   const _at=document.querySelector('.tab-btn.on')?.textContent||'';
-  if(_at.includes('Scenarios'))rScenarios();
-  if(_at.includes('Compliance'))rRegTimeline();
-  if(_at.includes('Next'))rNextSteps();
+  if(_at.includes('Roadmap'))rRoadmap();
+  else if(_at.includes('Financials'))rFinancials();
+  else if(_at.includes('Benchmarks'))rBenchmarks();
+  else if(_at.includes('Business'))rBizCase();
+  else if(_at.includes('Scenarios'))rScenarios();
+  else if(_at.includes('Compliance'))rRegTimeline();
+  else if(_at.includes('Next'))rNextSteps();
 }
 
 /* ═══════════════ TABS ═══════════════ */
